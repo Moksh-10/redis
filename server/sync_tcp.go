@@ -1,10 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"net"
 	"strconv"
 	"log"
+	"io"
 
 	"github.com/Moksh-10/redis/config"
 )
@@ -30,7 +30,7 @@ func RunSyncTCPServer() {
 
 	var con_clients int = 0
 
-	lsnr, err := net.Listen("tcp", config.Host+":"strconv.Itoa(config.Port))
+	lsnr, err := net.Listen("tcp", config.Host+":"+strconv.Itoa(config.Port))
 	if err != nil {
 		panic(err)
 	}
