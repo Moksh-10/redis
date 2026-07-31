@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/Moksh-10/config"
-	"github.com/Moksh-10/server"
+	"github.com/Moksh-10/redis/config"
+	"github.com/Moksh-10/redis/server"
 )
 
 func setupFlags() {

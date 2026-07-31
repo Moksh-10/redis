@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"log"
 
-	"github.com/Moksh-10/config"
+	"github.com/Moksh-10/redis/config"
 )
 
 func readCommand(c net.Conn) (string, error) {
