@@ -87,7 +87,7 @@ func RunAsyncTCPServer() error {
 					con_clients -= 1
 					continue
 				}
-				respond(cmd, conn)
+				respond(cmd, comm)
 			}
 		}
 	}
