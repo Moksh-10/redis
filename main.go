@@ -17,5 +17,6 @@ func setupFlags() {
 func main() {
 	setupFlags()
 	log.Println("rolling")
-	server.RunSyncTCPServer()
+	// server.RunSyncTCPServer()
+	server.RunAsyncTCPServer()
 }
