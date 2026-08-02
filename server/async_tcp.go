@@ -4,12 +4,15 @@ import (
 	"log"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/Moksh-10/redis/config"
 	"github.com/Moksh-10/redis/core"
 )
 
 var con_clients = 0
+var cronFrequency time.Duration = 1 * time.Second
+var lastCronExecTime time.Time = time.Now()
 
 func RunAsyncTCPServer() error {
 	log.Println("starting an async TCP server on", config.Host, config.Port)
@@ -56,6 +59,12 @@ func RunAsyncTCPServer() error {
 	}
 
 	for {
+		// can make an interrupt and run it - but just to keep it simple
+		if time.Now().After(lastCronExecTime.Add(cronFrequency)) {
+			core.DeleteExpiredKeys()
+			lastCronExecTime = time.Now()
+		}
+
 		nevents, e := syscall.EpollWait(epollFD, events[:], -1)
 		if e != nil {
 			continue
