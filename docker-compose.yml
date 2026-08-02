@@ -1,0 +1,9 @@
+services:
+  redis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: redis
+    ports:
+      - "7379:7379"
+    restart: unless-stopped
