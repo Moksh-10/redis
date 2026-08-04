@@ -167,7 +167,7 @@ func EvalAndRespond(cmds RedisCmds, c io.ReadWriter) {
 			buf.Write(evalDEL(cmd.Args))
 		case "EXPIRE":
 			buf.Write(evalEXPIRE(cmd.Args))
-		case "BGREWRITEOF":
+		case "BGREWRITEAOF":
 			buf.Write(evalBGREWRITEAOF(cmd.Args))
 		default:
 			buf.Write(evalPING(cmd.Args))
