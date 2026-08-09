@@ -2,8 +2,8 @@ package core
 
 type Obj struct {
 	TypeEncoding uint8
+	LastAccessedAT uint32
 	Value interface{}
-	ExpiresAt int64
 }
 
 var OBJ_TYPE_STRING uint8 = 0 << 4
