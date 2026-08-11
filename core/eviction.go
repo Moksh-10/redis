@@ -24,6 +24,7 @@ func evictAllkeysRandom() {
 }
 
 func getCurrentClock() uint32 {
+	// masks out the first 8 bits keeping the last 24 ones 
 	return uint32(time.Now().Unix()) & 0x00FFFFFF
 }
 
@@ -46,7 +47,7 @@ func populateEvictionPool() {
 	}
 }
 
-func evistAllkeysLRU() {
+func evictAllkeysLRU() {
 	populateEvictionPool()
 	evictCount := int16(config.EvictionRatio * float64(config.KeysLimit))
 	for i := 0; i < int(evictCount) && len(ePool.pool) > 0; i++ {
@@ -65,6 +66,6 @@ func evict() {
 	case "allkeys-random":
 		evictAllkeysRandom()
 	case "allkeys-lru":
-		evistAllkeysLRU()
+		evictAllkeysLRU()
 	}
 }

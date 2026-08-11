@@ -39,7 +39,7 @@ func (pq *EvictionPool) Push (key string, lastAccessedAT uint32) {
 		pq.keyset[key] = item
 		pq.pool = append(pq.pool, item)
 
-		sort.Sort(ByIdleTime{pq.pool})
+		sort.Sort(ByIdleTime(pq.pool))
 	} else if lastAccessedAT > pq.pool[0].lastAccessedAT {
 		pq.pool = pq.pool[1:]
 		pq.keyset[key] = item
