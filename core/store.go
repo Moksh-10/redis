@@ -48,8 +48,8 @@ func Get(k string) *Obj {
 			Del(k)
 			return nil 
 		}
+		v.LastAccessedAT = getCurrentClock()
 	}
-	v.LastAccessedAT = getCurrentClock()
 	return v
 }
 

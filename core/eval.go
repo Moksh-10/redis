@@ -6,7 +6,6 @@ import (
 	"time"
 	"fmt"
 	"bytes"
-	"io"
 )
 
 var RESP_NIL []byte = []byte("$-1\r\n")
@@ -15,6 +14,13 @@ var RESP_ZERO []byte = []byte(":0\r\n")
 var RESP_ONE []byte = []byte(":1\r\n")
 var RESP_MINUS_1 []byte = []byte(":-1\r\n")
 var RESP_MINUS_2 []byte = []byte(":-2\r\n")
+var RESP_QUEUED []byte = []byte("+QUEUED\r\n")
+
+var txnCommands map[string]bool
+
+func init() {
+	txnCommands = map[string]bool{"EXEC": true, "DISCARD": true}
+}
 
 
 func evalPING(args []string) []byte {
@@ -216,39 +222,76 @@ func evalSLEEP(args []string) []byte {
 	return RESP_OK
 }
 
-func EvalAndRespond(cmds RedisCmds, c io.ReadWriter) {
-	var response []byte 
-	buf := bytes.NewBuffer(response)
-	for _, cmd := range cmds {
+func evalMULTI(args []string) []byte {
+	return RESP_OK
+}
+
+func executeCommand(cmd *RedisCmd, c *Client) []byte {
 		switch cmd.Cmd {
 		case "PING":
-			buf.Write(evalPING(cmd.Args))
+			return evalPING(cmd.Args)
 		case "SET":
-			buf.Write(evalSET(cmd.Args))
+			return evalSET(cmd.Args)
 		case "GET":
-			buf.Write(evalGET(cmd.Args))
+			return evalGET(cmd.Args)
 		case "TTL":
-			buf.Write(evalTTL(cmd.Args))
+			return evalTTL(cmd.Args)
 		case "DEL":
-			buf.Write(evalDEL(cmd.Args))
+			return evalDEL(cmd.Args)
 		case "EXPIRE":
-			buf.Write(evalEXPIRE(cmd.Args))
+			return evalEXPIRE(cmd.Args)
 		case "BGREWRITEAOF":
-			buf.Write(evalBGREWRITEAOF(cmd.Args))
+			return evalBGREWRITEAOF(cmd.Args)
 		case "INCR":
-			buf.Write(evalINCR(cmd.Args))
+			return evalINCR(cmd.Args)
 		case "INFO":
-			buf.Write(evalINFO(cmd.Args))
+			return evalINFO(cmd.Args)
 		case "CLIENT":
-			buf.Write(evalCLIENT(cmd.Args))
+			return evalCLIENT(cmd.Args)
 		case "LATENCY":
-			buf.Write(evalLATENCY(cmd.Args))
+			return evalLATENCY(cmd.Args)
 		case "LRU":
-			buf.Write(evalLRU(cmd.Args))
+			return evalLRU(cmd.Args)
 		case "SLEEP":
-			buf.Write(evalSLEEP(cmd.Args))
+			return evalSLEEP(cmd.Args)
+		case "MULTI":
+			c.TxnBegin()
+			return evalMULTI(cmd.Args)
+		case "EXEC":
+			if !c.isTxn {
+				return Encode(errors.New("exec without multi"), false)
+			}
+			return c.TxnExec()
+		case "DISCARD":
+			if !c.isTxn {
+				return Encode(errors.New("discard without multi"), false)
+			}
+			c.TxnDiscard()
+			return RESP_OK
 		default:
-			buf.Write(evalPING(cmd.Args))
+			return evalPING(cmd.Args)
+		}
+}
+
+func executeCommandToBuffer(cmd *RedisCmd, buf *bytes.Buffer, c *Client) {
+	buf.Write(executeCommand(cmd, c))
+}
+
+func EvalAndRespond(cmds RedisCmds, c *Client) {
+	var response []byte
+	buf := bytes.NewBuffer(response)
+
+	for _, cmd := range cmds {
+		if !c.isTxn {
+			executeCommandToBuffer(cmd, buf, c)
+			continue
+		}
+
+		if !txnCommands[cmd.Cmd] {
+			c.TxnQueue(cmd)
+			buf.Write(RESP_QUEUED)
+		} else {
+			executeCommandToBuffer(cmd, buf, c)
 		}
 	}
 	c.Write(buf.Bytes())

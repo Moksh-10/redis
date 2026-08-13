@@ -2,12 +2,8 @@ package server
 
 import (
 	"io"
-	"log"
-	"net"
-	"strconv"
 	"strings"
 
-	"github.com/Moksh-10/redis/config"
 	"github.com/Moksh-10/redis/core"
 )
 
@@ -45,39 +41,6 @@ func readCommand(c io.ReadWriter) (core.RedisCmds, error) {
 	return cmds, nil
 }
 
-func respond(cmds core.RedisCmds, c io.ReadWriter) {
+func respond(cmds core.RedisCmds, c *core.Client) {
 	core.EvalAndRespond(cmds, c)
-}
-
-func RunSyncTCPServer() {
-	log.Println("starting a sync tcp server on ", config.Host, config.Port)
-
-	var con_clients int = 0
-
-	lsnr, err := net.Listen("tcp", config.Host+":"+strconv.Itoa(config.Port))
-	if err != nil {
-		log.Println("err", err)
-		return
-	}
-
-	for {
-		c, err := lsnr.Accept()
-		if err != nil {
-			log.Println("err", err)
-		}
-
-		con_clients += 1
-
-		for {
-			cmds, err := readCommand(c)
-			if err != nil {
-				c.Close()
-				con_clients -= 1
-				if err == io.EOF {
-					break
-				}
-			}
-			respond(cmds, c)
-		}
-	}
 }
