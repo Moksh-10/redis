@@ -39,6 +39,7 @@ func expireSample() float32 {
 func DeleteExpiredKeys() {
 	for {
 		frac := expireSample()
+		// we stop at frac < 0.25, until that we del
 		if frac < 0.25 {
 			break
 		}

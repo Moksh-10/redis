@@ -5,8 +5,8 @@ import (
 	"github.com/Moksh-10/redis/config"
 )
 
-var store map[string]*Obj 
-var expires map[*Obj]uint64
+var store map[string]*Obj // to store actual key - object 
+var expires map[*Obj]uint64 // to store exp time 
 
 func init() {
 	store = make(map[string]*Obj)
